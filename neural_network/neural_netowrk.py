@@ -1,0 +1,1 @@
+# Here neural network based on Keras (?) and preprocessing/augemntation

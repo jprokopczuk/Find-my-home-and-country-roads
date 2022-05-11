@@ -1,0 +1,1 @@
+# Here simple tresholding based on opencv
