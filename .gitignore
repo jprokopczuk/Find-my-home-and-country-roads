@@ -1,6 +1,6 @@
 # Language-related
 *.pyc
 __pycache__
-
+data/
 # Development
 .vscode
