@@ -13,7 +13,7 @@ def main():
     print(Y_val_cat.shape)
     print(X_test.shape)
     print(Y_test_cat.shape)
-    model=neural_netowrk.generate_model(3,1500,1500,3)
+    model=neural_netowrk.generate_model(3,512,512,3)
 
     history = model.fit(X_test, Y_test_cat,
                         batch_size=16,
