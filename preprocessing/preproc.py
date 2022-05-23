@@ -11,9 +11,9 @@ def load_data(type):
     Y_buildings_names.sort()
     Y_roads_names = glob.glob("data/roads/" + type + "_labels/*.tif")
     Y_roads_names.sort()
-    X = np.array([np.array(Image.open(fname).resize((512,512))) for fname in X_names])
-    Y = np.array([np.array(Image.open(fname).resize((512,512))) for fname in Y_buildings_names])
-    Y_r = np.array([np.array(Image.open(fname).resize((512,512))) for fname in Y_roads_names])
+    X = np.array([np.array(Image.open(fname).resize((128,128))) for fname in X_names])
+    Y = np.array([np.array(Image.open(fname).resize((128,128))) for fname in Y_buildings_names])
+    Y_r = np.array([np.array(Image.open(fname).resize((128,128))) for fname in Y_roads_names])
     X = X.astype('float32')
     Y = Y.astype('float32')
     Y_r = Y_r.astype('float32')
@@ -37,9 +37,9 @@ def load_data(type):
 
 def generate_data_set():
 
-    #X_train, Y_train_cat = load_data("train")
+    X_train, Y_train_cat = load_data("train")
     X_val, Y_val_cat = load_data("val")
     X_test, Y_test_cat = load_data("test")
 
-    return X_val, Y_val_cat, X_test, Y_test_cat
+    return X_train, Y_train_cat, X_val, Y_val_cat, X_test, Y_test_cat
 
