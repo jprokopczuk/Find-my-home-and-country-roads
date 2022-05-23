@@ -21,6 +21,9 @@ def load_data(type):
     Y /= 255
     Y_r /= 127.5
     Y = Y[:, :, :, 0]
+    print(Y.shape[0])
+    print(Y.shape[1])
+    print(Y.shape[2])
     for i in range(Y.shape[0]):
         for j in range(Y.shape[1]):
             for k in range(Y.shape[2]):
@@ -34,19 +37,9 @@ def load_data(type):
 
 def generate_data_set():
 
-    X_train, Y_train_cat = load_data("train")
+    #X_train, Y_train_cat = load_data("train")
     X_val, Y_val_cat = load_data("val")
     X_test, Y_test_cat = load_data("test")
 
-    return X_train, Y_train_cat, X_val, Y_val_cat, X_test, Y_test_cat
+    return X_val, Y_val_cat, X_test, Y_test_cat
 
-
-
-X_train, Y_train_cat, X_val, Y_val_cat, X_test, Y_test_cat = generate_data_set()
-
-print(X_train.shape)
-print(Y_train_cat.shape)
-print(X_val.shape)
-print(Y_val_cat.shape)
-print(X_test.shape)
-print(Y_test_cat.shape)
