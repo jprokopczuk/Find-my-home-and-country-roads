@@ -14,14 +14,14 @@ def load_data(type):
     l=[]
     size=256
     for fname in X_names:
-        im=np.array(Image.open(fname).resize((1536,1536)))
+        im=np.array(Image.open(fname).crop((60, 60, 1340, 1340)))
         tiles = [im[x:x + size, y:y + size] for x in range(0, im.shape[0], size) for y in range(0, im.shape[1], size)]
         for i in range(len(tiles)):
             l.append(tiles[i])
     X = np.array(l)
     l = []
     for fname in Y_buildings_names:
-        im = np.array(Image.open(fname).resize((1536,1536)))
+        im = np.array(Image.open(fname).crop((60, 60, 1340, 1340)))
         tiles = [im[x:x + size, y:y + size] for x in range(0, im.shape[0], size) for y in range(0, im.shape[1], size)]
         for i in range(len(tiles)):
             l.append(tiles[i])
@@ -29,7 +29,7 @@ def load_data(type):
     l = []
 
     for fname in Y_roads_names:
-        im = np.array(Image.open(fname).resize((1536,1536)))
+        im = np.array(Image.open(fname).crop((60, 60, 1340, 1340)))
         tiles = [im[x:x + size, y:y + size] for x in range(0, im.shape[0], size) for y in range(0, im.shape[1], size)]
         for i in range(len(tiles)):
             l.append(tiles[i])
