@@ -11,9 +11,30 @@ def load_data(type):
     Y_buildings_names.sort()
     Y_roads_names = glob.glob("data/roads/" + type + "_labels/*.tif")
     Y_roads_names.sort()
-    X = np.array([np.array(Image.open(fname).resize((256,256))) for fname in X_names])
-    Y = np.array([np.array(Image.open(fname).resize((256,256))) for fname in Y_buildings_names])
-    Y_r = np.array([np.array(Image.open(fname).resize((256,256))) for fname in Y_roads_names])
+    l=[]
+    size=256
+    for fname in X_names:
+        im=np.array(Image.open(fname).resize((1536,1536)))
+        tiles = [im[x:x + size, y:y + size] for x in range(0, im.shape[0], size) for y in range(0, im.shape[1], size)]
+        for i in range(len(tiles)):
+            l.append(tiles[i])
+    X = np.array(l)
+    l = []
+    for fname in Y_buildings_names:
+        im = np.array(Image.open(fname).resize((1536,1536)))
+        tiles = [im[x:x + size, y:y + size] for x in range(0, im.shape[0], size) for y in range(0, im.shape[1], size)]
+        for i in range(len(tiles)):
+            l.append(tiles[i])
+    Y = np.array(l)
+    l = []
+
+    for fname in Y_roads_names:
+        im = np.array(Image.open(fname).resize((1536,1536)))
+        tiles = [im[x:x + size, y:y + size] for x in range(0, im.shape[0], size) for y in range(0, im.shape[1], size)]
+        for i in range(len(tiles)):
+            l.append(tiles[i])
+    Y_r = np.array(l)
+
     X = X.astype('float32')
     Y = Y.astype('float32')
     Y_r = Y_r.astype('float32')
