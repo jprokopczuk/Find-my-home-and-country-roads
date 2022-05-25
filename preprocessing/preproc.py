@@ -12,16 +12,16 @@ def load_data(type):
     Y_roads_names = glob.glob("data/roads/" + type + "_labels/*.tif")
     Y_roads_names.sort()
     l=[]
-    size=256
+    size=128
     for fname in X_names:
-        im=np.array(Image.open(fname).crop((60, 60, 1340, 1340)))
+        im=np.array(Image.open(fname).crop((46, 46, 1454, 1454)))
         tiles = [im[x:x + size, y:y + size] for x in range(0, im.shape[0], size) for y in range(0, im.shape[1], size)]
         for i in range(len(tiles)):
             l.append(tiles[i])
     X = np.array(l)
     l = []
     for fname in Y_buildings_names:
-        im = np.array(Image.open(fname).crop((60, 60, 1340, 1340)))
+        im = np.array(Image.open(fname).crop((46, 46, 1454, 1454)))
         tiles = [im[x:x + size, y:y + size] for x in range(0, im.shape[0], size) for y in range(0, im.shape[1], size)]
         for i in range(len(tiles)):
             l.append(tiles[i])
@@ -29,7 +29,7 @@ def load_data(type):
     l = []
 
     for fname in Y_roads_names:
-        im = np.array(Image.open(fname).crop((60, 60, 1340, 1340)))
+        im = np.array(Image.open(fname).crop((46, 46, 1454, 1454)))
         tiles = [im[x:x + size, y:y + size] for x in range(0, im.shape[0], size) for y in range(0, im.shape[1], size)]
         for i in range(len(tiles)):
             l.append(tiles[i])
@@ -51,16 +51,17 @@ def load_data(type):
                 if Y[i][j][k] < Y_r[i][j][k]:
                     Y[i][j][k] = Y_r[i][j][k]
 
+    Y_mask = Y
     Y_cat = np_utils.to_categorical(Y, 3)
 
-    return X, Y_cat
+    return X, Y_cat, Y_mask
 
 
 def generate_data_set():
 
-    X_train, Y_train_cat = load_data("train")
-    X_val, Y_val_cat = load_data("val")
-    X_test, Y_test_cat = load_data("test")
+    X_train, Y_train_cat, Y_train_mask = load_data("train")
+    X_val, Y_val_cat, Y_val_mask = load_data("val")
+    X_test, Y_test_cat, Y_test_mask = load_data("test")
 
-    return X_train, Y_train_cat, X_val, Y_val_cat, X_test, Y_test_cat
+    return X_train, Y_train_cat, Y_train_mask, X_val, Y_val_cat, X_test, Y_test_cat
 
