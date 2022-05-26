@@ -13,15 +13,16 @@ def load_data(type):
     Y_roads_names.sort()
     l=[]
     size=128
+    size_x=46
     for fname in X_names:
-        im=np.array(Image.open(fname).crop((46, 46, 1454, 1454)))
+        im=np.array(Image.open(fname).crop((size_x, size_x, 1500-size_x, 1500-size_x)))
         tiles = [im[x:x + size, y:y + size] for x in range(0, im.shape[0], size) for y in range(0, im.shape[1], size)]
         for i in range(len(tiles)):
             l.append(tiles[i])
     X = np.array(l)
     l = []
     for fname in Y_buildings_names:
-        im = np.array(Image.open(fname).crop((46, 46, 1454, 1454)))
+        im = np.array(Image.open(fname).crop((size_x, size_x, 1500-size_x, 1500-size_x)))
         tiles = [im[x:x + size, y:y + size] for x in range(0, im.shape[0], size) for y in range(0, im.shape[1], size)]
         for i in range(len(tiles)):
             l.append(tiles[i])
@@ -29,7 +30,7 @@ def load_data(type):
     l = []
 
     for fname in Y_roads_names:
-        im = np.array(Image.open(fname).crop((46, 46, 1454, 1454)))
+        im = np.array(Image.open(fname).crop((size_x, size_x, 1500-size_x, 1500-size_x)))
         tiles = [im[x:x + size, y:y + size] for x in range(0, im.shape[0], size) for y in range(0, im.shape[1], size)]
         for i in range(len(tiles)):
             l.append(tiles[i])
@@ -64,4 +65,4 @@ def generate_data_set():
     X_test, Y_test_cat, Y_test_mask = load_data("test")
 
     return X_train, Y_train_cat, Y_train_mask, X_val, Y_val_cat, X_test, Y_test_cat
-
+    #return X_test, Y_test_cat, Y_test_mask, X_val, Y_val_cat

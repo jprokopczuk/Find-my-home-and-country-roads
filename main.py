@@ -10,23 +10,24 @@ import random
 
 
 def main():
-    #os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+    # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
     X_train, Y_train_cat, Y_train_mask, X_val, Y_val_cat, X_test, Y_test_cat = preproc.generate_data_set()
+    #X_train, Y_train_cat, Y_train_mask, X_test, Y_test_cat = preproc.generate_data_set()
 
-    X_train=X_train[0:1000]
-    Y_train_cat = Y_train_cat[0:1000]
-    Y_train_mask = Y_train_mask[0:1000]
-    X_test = X_test[0:200]
-    Y_test_cat = Y_test_cat[0:200]
-    X_val = X_val[0:100]
-    Y_val_cat = Y_val_cat[0:100]
+    X_train = X_train[0:2000]
+    Y_train_cat = Y_train_cat[0:2000]
+    Y_train_mask = Y_train_mask[0:2000]
+    X_test = X_test[0:400]
+    Y_test_cat = Y_test_cat[0:400]
+    X_val = X_val[0:400]
+    Y_val_cat = Y_val_cat[0:400]
     print(X_train.shape)
     print(Y_train_cat.shape)
     print(X_val.shape)
     print(Y_val_cat.shape)
     print(X_test.shape)
     print(Y_test_cat.shape)
-    model=neural_netowrk.generate_model(3,128,128,3)
+    # model=neural_netowrk.generate_model(3,128,128,3)
 
     test_img_number = random.randint(0, len(X_test))
     test_img = X_test[test_img_number]
@@ -44,7 +45,7 @@ def main():
     plt.imshow(ground_truth[:, :, 2])
     plt.show()
 
-    #Normalizacja wag
+    # Normalizacja wag
     from sklearn.preprocessing import LabelEncoder
     labelencoder = LabelEncoder()
     n, h, w = Y_train_mask.shape
@@ -57,30 +58,50 @@ def main():
     print(train_masks_reshaped.shape)
     print(train_masks_reshaped_encoded.shape)
     from sklearn.utils import class_weight
-    class_weights = class_weight.compute_class_weight(class_weight ="balanced",
-                                                      classes = np.unique(train_masks_reshaped_encoded),
-                                                      y = train_masks_reshaped_encoded)
+    class_weights = class_weight.compute_class_weight(class_weight="balanced",
+                                                      classes=np.unique(train_masks_reshaped_encoded),
+                                                      y=train_masks_reshaped_encoded)
+    Y_class_weights = np.zeros((Y_train_cat.shape[0], Y_train_cat.shape[1], Y_train_cat.shape[2]), dtype=float)
     print("Class weights are...:", class_weights)
+    class_weights[0] = 1
+    class_weights[1] = 1.4
+    class_weights[2] = 1.6
+    for i in range(Y_train_cat.shape[0]):
+        for j in range(Y_train_cat.shape[1]):
+            for k in range(Y_train_cat.shape[2]):
+                for l in range(3):
+                    if Y_train_cat[i][j][k][l] > 0.5:
+                        Y_class_weights[i][j][k] = class_weights[l]
 
+    sample_weights = class_weight.compute_sample_weight('balanced', y=train_masks_reshaped_encoded)
+    print("Class weights are...:", class_weights)
+    print("Sample weights are...:", sample_weights)
     class_weights_dict = dict(zip(np.unique(train_masks_reshaped_encoded), class_weights))
 
     print("Class weights are...:", class_weights_dict)
-    history = model.fit(X_train, Y_train_cat,
+    print("Sample weights are...:", sample_weights)
+    model = neural_netowrk.generate_model(3, 128, 128, 3)
+    '''history = model.fit(X_train, Y_train_cat,
                         batch_size=16,
                         verbose=1,
                         epochs=50,
                         validation_data=(X_val, Y_val_cat),
                         class_weight=class_weights_dict,
+                        shuffle=False)'''
+    history = model.fit(X_train, Y_train_cat,
+                        batch_size=16,
+                        verbose=1,
+                        epochs=70,
+                        validation_data=(X_val, Y_val_cat),
+                        sample_weight=Y_class_weights,
                         shuffle=False)
-
     model.save('test.hdf5')
 
+    # Jesli masz juz model to go wczytaj
+    # model.load_weights('test.hdf5')
 
-    #Jesli masz juz model to go wczytaj
-    #model.load_weights('test.hdf5')
-
-    loss,acc=model.evaluate(X_test, Y_test_cat)
-    print(f"Accuracy is = {acc*100}%")
+    loss, acc = model.evaluate(X_test, Y_test_cat)
+    print(f"Accuracy is = {acc * 100}%")
 
     loss = history.history['loss']
     val_loss = history.history['val_loss']
@@ -108,7 +129,7 @@ def main():
         test_img_number = random.randint(0, len(X_test))
         test_img = X_test[test_img_number]
         ground_truth = Y_test_cat[test_img_number]
-        #test_img_norm = test_img[:, :, 0][:, :, None]
+        test_img_norm = test_img[:, :, 0][:, :, None]
         test_img_input = np.expand_dims(test_img, 0)
         print(test_img_input.size)
         prediction = (model.predict(test_img_input))
@@ -126,5 +147,6 @@ def main():
         plt.imshow(predicted_img[:, :], cmap='jet')
         plt.show()
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     main()
