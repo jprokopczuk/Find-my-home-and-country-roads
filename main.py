@@ -7,7 +7,8 @@ from neural_network import neural_netowrk
 import numpy as np
 import os
 import random
-
+import albumentations as A
+import cv2
 
 def main():
     # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
@@ -29,21 +30,51 @@ def main():
     print(Y_test_cat.shape)
     # model=neural_netowrk.generate_model(3,128,128,3)
 
-    test_img_number = random.randint(0, len(X_test))
-    test_img = X_test[test_img_number]
-    ground_truth = Y_test_cat[test_img_number]
+    #Augumentation
+    transform = A.Compose(
+        [
+            A.ShiftScaleRotate(shift_limit=0.2, scale_limit=0.2, rotate_limit=30, p=0.5),
+            A.HorizontalFlip(p=0.5),
+        ]
+    )
 
-    plt.figure(figsize=(12, 8))
-    plt.subplot(231)
-    plt.title('Testing Image')
-    plt.imshow(ground_truth[:, :, 0])
-    plt.subplot(232)
-    plt.title('Testing Label')
-    plt.imshow(ground_truth[:, :, 1])
-    plt.subplot(233)
-    plt.title('Testing Label')
-    plt.imshow(ground_truth[:, :, 2])
-    plt.show()
+    for i in range(X_train.shape[0]):
+        transformed_im_train = transform(image=X_train[i], mask=Y_train_cat[i])
+        X_train[i] = transformed_im_train['image']
+        Y_train_cat[i] = transformed_im_train['mask']
+
+
+    for i in range(X_val.shape[0]):
+        transformed_im_val = transform(image=X_val[i], mask=Y_val_cat[i])
+        X_val[i] = transformed_im_val['image']
+        Y_val_cat[i] = transformed_im_val['mask']
+
+    print("Augumentation is done")
+    def show_random_image(data_set, data_set_mask, data_set_name, n):
+
+        for i in range(n):
+            img_number = random.randint(0, len(data_set))
+            test_img = data_set[img_number]
+            ground_truth = data_set_mask[img_number]
+
+            plt.figure(figsize=(12, 8))
+            plt.subplot(231)
+            plt.title('Random ' + data_set_name + ' image : ' + str(i))
+            plt.imshow(test_img)
+            plt.subplot(232)
+            plt.title('Random ' + data_set_name + ' background mask : ' + str(i))
+            plt.imshow(ground_truth[:, :, 0])
+            plt.subplot(233)
+            plt.title('Random ' + data_set_name + ' buildings mask : ' + str(i))
+            plt.imshow(ground_truth[:, :, 1])
+            plt.subplot(234)
+            plt.title('Random ' + data_set_name + ' roads mask : ' + str(i))
+            plt.imshow(ground_truth[:, :, 2])
+            plt.show()
+
+    show_random_image(X_train, Y_train_cat, "train", 4)
+    show_random_image(X_val, Y_val_cat, "val", 4)
+    show_random_image(X_test, Y_test_cat, "test", 4)
 
     # Normalizacja wag
     from sklearn.preprocessing import LabelEncoder
