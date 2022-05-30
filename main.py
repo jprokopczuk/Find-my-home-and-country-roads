@@ -131,8 +131,13 @@ def main():
     # Jesli masz juz model to go wczytaj
     # model.load_weights('test.hdf5')
 
-    loss, acc = model.evaluate(X_test, Y_test_cat)
+    loss, acc, prec, recall, f1, jaccard = model.evaluate(X_test, Y_test_cat)
     print(f"Accuracy is = {acc * 100}%")
+    print(f"Loss is = {loss * 100}%")
+    print(f"Precision is = {prec * 100}%")
+    print(f"Recall is = {recall * 100}%")
+    print(f"F1 score is = {f1 * 100}%")
+    print(f"Jaccard index is = {jaccard * 100}%")
 
     loss = history.history['loss']
     val_loss = history.history['val_loss']
@@ -147,7 +152,6 @@ def main():
 
     acc = history.history['accuracy']
     val_acc = history.history['val_accuracy']
-
     plt.plot(epochs, acc, 'y', label='Training Accuracy')
     plt.plot(epochs, val_acc, 'r', label='Validation Accuracy')
     plt.title('Training and validation Accuracy')
@@ -156,7 +160,47 @@ def main():
     plt.legend()
     plt.show()
 
-    for i in range(5):
+    prec = history.history['precision']
+    val_prec = history.history['val_precision']
+    plt.plot(epochs, prec, 'y', label='Training Precision')
+    plt.plot(epochs, val_prec, 'r', label='Validation Precision')
+    plt.title('Training and validation Precision')
+    plt.xlabel('Epochs')
+    plt.ylabel('Precision')
+    plt.legend()
+    plt.show()
+
+    recall = history.history['recall']
+    val_recall = history.history['val_recall']
+    plt.plot(epochs, recall, 'y', label='Training Recall')
+    plt.plot(epochs, val_recall, 'r', label='Validation Recall')
+    plt.title('Training and validation Recall')
+    plt.xlabel('Epochs')
+    plt.ylabel('Recall')
+    plt.legend()
+    plt.show()
+
+    f1 = history.history['f1_metric']
+    val_f1 = history.history['val_f1_metric']
+    plt.plot(epochs, f1, 'y', label='Training F1 Score')
+    plt.plot(epochs, val_f1, 'r', label='Validation F1 Score')
+    plt.title('Training and validation F1 Score')
+    plt.xlabel('Epochs')
+    plt.ylabel('F1 Score')
+    plt.legend()
+    plt.show()
+
+    jaccard = history.history['jaccard_index']
+    val_jaccard = history.history['val_jaccard_index']
+    plt.plot(epochs, jaccard, 'y', label='Training Jaccard Index')
+    plt.plot(epochs, val_jaccard, 'r', label='Validation Jaccard Index')
+    plt.title('Training and validation Jaccard Index')
+    plt.xlabel('Epochs')
+    plt.ylabel('Jaccard Index')
+    plt.legend()
+    plt.show()
+
+    for i in range(20):
         test_img_number = random.randint(0, len(X_test))
         test_img = X_test[test_img_number]
         ground_truth = Y_test_cat[test_img_number]
