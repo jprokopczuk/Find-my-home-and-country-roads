@@ -8,3 +8,6 @@ __pycache__
 # Directories
 archive/
 treshholding/example_picture/
+
+# Files type
+*.zip
