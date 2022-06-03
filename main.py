@@ -9,6 +9,7 @@ import os
 import random
 import albumentations as A
 import cv2
+from mlxtend.plotting import plot_confusion_matrix
 
 def main():
     # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
@@ -29,6 +30,24 @@ def main():
     print(X_test.shape)
     print(Y_test_cat.shape)
     # model=neural_netowrk.generate_model(3,128,128,3)
+    test_img_number = random.randint(0, len(X_test))
+    test_img = X_test[test_img_number]
+    ground_truth = Y_test_cat[test_img_number]
+
+    plt.figure(figsize=(12, 8))
+    plt.subplot(141)
+    plt.title('Testing Image')
+    plt.imshow(test_img)
+    plt.subplot(142)
+    plt.title('Background Label')
+    plt.imshow(ground_truth[:, :, 0])
+    plt.subplot(143)
+    plt.title('Buildings Label')
+    plt.imshow(ground_truth[:, :, 1])
+    plt.subplot(144)
+    plt.title('Roads Label')
+    plt.imshow(ground_truth[:, :, 2])
+    plt.show()
 
     #Augumentation
     transform = A.Compose(
@@ -58,16 +77,16 @@ def main():
             ground_truth = data_set_mask[img_number]
 
             plt.figure(figsize=(12, 8))
-            plt.subplot(231)
+            plt.subplot(141)
             plt.title('Random ' + data_set_name + ' image : ' + str(i))
             plt.imshow(test_img)
-            plt.subplot(232)
+            plt.subplot(142)
             plt.title('Random ' + data_set_name + ' background mask : ' + str(i))
             plt.imshow(ground_truth[:, :, 0])
-            plt.subplot(233)
+            plt.subplot(143)
             plt.title('Random ' + data_set_name + ' buildings mask : ' + str(i))
             plt.imshow(ground_truth[:, :, 1])
-            plt.subplot(234)
+            plt.subplot(144)
             plt.title('Random ' + data_set_name + ' roads mask : ' + str(i))
             plt.imshow(ground_truth[:, :, 2])
             plt.show()
@@ -95,8 +114,8 @@ def main():
     Y_class_weights = np.zeros((Y_train_cat.shape[0], Y_train_cat.shape[1], Y_train_cat.shape[2]), dtype=float)
     print("Class weights are...:", class_weights)
     class_weights[0] = 1
-    class_weights[1] = 1.4
-    class_weights[2] = 1.6
+    class_weights[1] = 1.18
+    class_weights[2] = 1.4
     for i in range(Y_train_cat.shape[0]):
         for j in range(Y_train_cat.shape[1]):
             for k in range(Y_train_cat.shape[2]):
@@ -111,6 +130,7 @@ def main():
 
     print("Class weights are...:", class_weights_dict)
     print("Sample weights are...:", sample_weights)
+
     model = neural_netowrk.generate_model(3, 128, 128, 3)
     '''history = model.fit(X_train, Y_train_cat,
                         batch_size=16,
@@ -122,22 +142,20 @@ def main():
     history = model.fit(X_train, Y_train_cat,
                         batch_size=16,
                         verbose=1,
-                        epochs=70,
+                        epochs=100,
                         validation_data=(X_val, Y_val_cat),
                         sample_weight=Y_class_weights,
                         shuffle=False)
     model.save('test.hdf5')
 
     # Jesli masz juz model to go wczytaj
-    # model.load_weights('test.hdf5')
-
-    loss, acc, prec, recall, f1, jaccard = model.evaluate(X_test, Y_test_cat)
+    #model.load_weights('test.hdf5')
+    loss, acc, jaccard, dice = model.evaluate(X_test, Y_test_cat)
+    #loss, acc, jaccard, dice = model.evaluate(X_train, Y_train_cat)
     print(f"Accuracy is = {acc * 100}%")
     print(f"Loss is = {loss * 100}%")
-    print(f"Precision is = {prec * 100}%")
-    print(f"Recall is = {recall * 100}%")
-    print(f"F1 score is = {f1 * 100}%")
     print(f"Jaccard index is = {jaccard * 100}%")
+    print(f"Dice index is = {dice * 100}%")
 
     loss = history.history['loss']
     val_loss = history.history['val_loss']
@@ -160,36 +178,6 @@ def main():
     plt.legend()
     plt.show()
 
-    prec = history.history['precision']
-    val_prec = history.history['val_precision']
-    plt.plot(epochs, prec, 'y', label='Training Precision')
-    plt.plot(epochs, val_prec, 'r', label='Validation Precision')
-    plt.title('Training and validation Precision')
-    plt.xlabel('Epochs')
-    plt.ylabel('Precision')
-    plt.legend()
-    plt.show()
-
-    recall = history.history['recall']
-    val_recall = history.history['val_recall']
-    plt.plot(epochs, recall, 'y', label='Training Recall')
-    plt.plot(epochs, val_recall, 'r', label='Validation Recall')
-    plt.title('Training and validation Recall')
-    plt.xlabel('Epochs')
-    plt.ylabel('Recall')
-    plt.legend()
-    plt.show()
-
-    f1 = history.history['f1_metric']
-    val_f1 = history.history['val_f1_metric']
-    plt.plot(epochs, f1, 'y', label='Training F1 Score')
-    plt.plot(epochs, val_f1, 'r', label='Validation F1 Score')
-    plt.title('Training and validation F1 Score')
-    plt.xlabel('Epochs')
-    plt.ylabel('F1 Score')
-    plt.legend()
-    plt.show()
-
     jaccard = history.history['jaccard_index']
     val_jaccard = history.history['val_jaccard_index']
     plt.plot(epochs, jaccard, 'y', label='Training Jaccard Index')
@@ -200,7 +188,26 @@ def main():
     plt.legend()
     plt.show()
 
+    dice = history.history['dice']
+    val_dice = history.history['val_dice']
+    plt.plot(epochs, dice, 'y', label='Training dice')
+    plt.plot(epochs, val_dice, 'r', label='Validation dice')
+    plt.title('Training and validation dice')
+    plt.xlabel('Epochs')
+    plt.ylabel('dice')
+    plt.legend()
+    plt.show()
+
     for i in range(20):
+        T_0=0
+        T_01=0
+        T_02 = 0
+        T_1 = 0
+        T_10 = 0
+        T_12 = 0
+        T_2 = 0
+        T_20 = 0
+        T_21 = 0
         test_img_number = random.randint(0, len(X_test))
         test_img = X_test[test_img_number]
         ground_truth = Y_test_cat[test_img_number]
@@ -209,17 +216,67 @@ def main():
         print(test_img_input.size)
         prediction = (model.predict(test_img_input))
         predicted_img = np.argmax(prediction, axis=3)[0, :, :]
+        for j in range(ground_truth.shape[0]):
+            for k in range(ground_truth.shape[1]):
+                for l in range(ground_truth.shape[2]):
+                    if ground_truth[j][k][l]==1:
+                        if l==0:
+                            if predicted_img[j][k]==0:
+                                T_0 += 1
+                            elif predicted_img[j][k]==1:
+                                T_01 += 1
+                            else:
+                                T_02 += 1
+                        elif l==1:
+                            if predicted_img[j][k] == 1:
+                                T_1 += 1
+                            elif predicted_img[j][k] == 0:
+                                T_10 += 1
+                            else:
+                                T_12 += 1
+                        else:
+                            if predicted_img[j][k] == 2:
+                                T_2 += 1
+                            elif predicted_img[j][k] == 0:
+                                T_20 += 1
+                            else:
+                                T_21 += 1
+        Matrix=[[T_0,T_01,T_02],
+                [T_10,T_1,T_12],
+                [T_20,T_21,T_2]]
+        arr=np.array(Matrix)
+        print(arr)
+        BackgroundPrecision=(T_0)/(T_0+T_01+T_02)
+        BackgroundRecall = (T_0) / (T_0 + T_10 + T_20)
+        BackgroundF1=2*(BackgroundRecall*BackgroundPrecision)/(BackgroundRecall+BackgroundPrecision)
+        BuildingPrecision = (T_1) / (T_1 + T_10 + T_12)
+        BuildingRecall = (T_1) / (T_1 + T_01 + T_21)
+        BuildingF1 = 2 * (BuildingRecall * BuildingPrecision) / (BuildingRecall + BuildingPrecision)
+        RoadPrecision = (T_2) / (T_2 + T_20 + T_21)
+        RoadRecall = (T_2) / (T_2 + T_02 + T_12)
+        RoadF1 = 2 * (RoadRecall * RoadPrecision) / (RoadRecall + RoadPrecision)
+        print(f"Precision (Background) = {BackgroundPrecision*100}%")
+        print(f"Precision (Building) = {BuildingPrecision*100}%")
+        print(f"Precision (Road) = {RoadPrecision*100}%")
+        print(f"Recall (Background) = {BackgroundRecall*100}%")
+        print(f"Recall (Building) = {BuildingRecall*100}%")
+        print(f"Recall (Road) = {RoadRecall*100}%")
+        print(f"F1 Score (Background) = {BackgroundF1*100}%")
+        print(f"F1 Score (Building) = {BuildingF1*100}%")
+        print(f"F1 Score (Road) = {RoadF1*100}%")
+        class_names = ['Background', 'Building', 'Road']
 
         plt.figure(figsize=(12, 8))
-        plt.subplot(231)
+        plt.subplot(131)
         plt.title('Testing Image')
         plt.imshow(test_img[:, :, :], cmap='gray')
-        plt.subplot(232)
+        plt.subplot(132)
         plt.title('Testing Label')
         plt.imshow(ground_truth[:, :, :], cmap='jet')
-        plt.subplot(233)
+        plt.subplot(133)
         plt.title('Prediction on test image')
         plt.imshow(predicted_img[:, :], cmap='jet')
+        fig, ax = plot_confusion_matrix(conf_mat=arr,colorbar=True,class_names=class_names)
         plt.show()
 
 

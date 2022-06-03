@@ -9,20 +9,17 @@ from tensorflow import keras
 from tensorflow.keras.metrics import Recall, Precision
 import keras.backend as K
 
-def f1_metric(y_true, y_pred):
-    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-    possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
-    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
-    precision = true_positives / (predicted_positives + K.epsilon())
-    recall = true_positives / (possible_positives + K.epsilon())
-    f1_val = 2*(precision*recall)/(precision+recall+K.epsilon())
-    return f1_val
-
 def jaccard_index(y_true, y_pred):
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
     intersection = K.sum(y_true_f * y_pred_f)
     return (intersection + 1.0) / (K.sum(y_true_f) + K.sum(y_pred_f) - intersection + 1.0)
+
+def dice(y_true, y_pred):
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return 2*(intersection + 1.0) / (K.sum(y_true_f) + K.sum(y_pred_f)+1.0)
 
 def generate_model(n_classes,IMG_HEIGHT, IMG_WIDTH, IMG_CHANNELS):
  model = Sequential()
@@ -71,7 +68,7 @@ def generate_model(n_classes,IMG_HEIGHT, IMG_WIDTH, IMG_CHANNELS):
 
  model.summary()
  adam = keras.optimizers.Adam(learning_rate=0.001)
- model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy', Precision(), Recall(), f1_metric, jaccard_index], sample_weight_mode="temporal")
+ model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy', jaccard_index, dice], sample_weight_mode="temporal")
 
 
  return model
