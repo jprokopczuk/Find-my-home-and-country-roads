@@ -2,6 +2,10 @@
 
 ## Setup
 
+```bash
+python3 main.py
+```
+
 Install dependencies
 
 ```bash

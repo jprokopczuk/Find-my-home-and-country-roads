@@ -4,3 +4,4 @@ __pycache__
 data/
 # Development
 .vscode
+test.hdf5
