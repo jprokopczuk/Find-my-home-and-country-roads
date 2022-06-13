@@ -1,10 +1,10 @@
 #!/usr/bin/env python 3
 
 #from .neural_network ...
-#from .tresholding ...
+from treshholding.tresholding import make_tresholding
 
 def main():
-    print("Hello fellows!")
+    make_tresholding()
 
 if __name__=="__main__":
     main()
