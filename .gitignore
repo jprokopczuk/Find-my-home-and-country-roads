@@ -4,4 +4,14 @@ __pycache__
 data/
 # Development
 .vscode
+
+
+# Directories
+archive/
+treshholding/example_picture/
+
+# Files type
+*.zip
+
 test.hdf5
+

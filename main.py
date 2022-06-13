@@ -1,5 +1,4 @@
 #!/usr/bin/env python 3
-
 from preprocessing import preproc
 from neural_network import neural_netowrk
 from results import results
