@@ -1,9 +1,10 @@
 # Language-related
 *.pyc
 __pycache__
-
+data/
 # Development
 .vscode
+
 
 # Directories
 archive/
@@ -11,3 +12,6 @@ treshholding/example_picture/
 
 # Files type
 *.zip
+
+test.hdf5
+

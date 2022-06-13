@@ -1,1 +1,8 @@
 opencv-python
+keras
+tensorflow
+matplotlib
+numpy
+sklearn
+albumentations
+mlxtend.plotting
