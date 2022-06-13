@@ -12,17 +12,25 @@ import matplotlib.pyplot as plt
 
 CONFIG_DIR = os.path.dirname(__file__) + "/example_picture/"
 
+def count_precision(predicted_mask, real_mask) -> float:
+    common_mask = np.bitwise_and(predicted_mask, real_mask)
+    pixels_predicted_mask = cv2.countNonZero(predicted_mask)
+    pixels_real_mask = cv2.countNonZero(real_mask)
+    pixels_common_mask = cv2.countNonZero(common_mask)
+
+    return pixels_common_mask/(pixels_real_mask)
+
+def count_recall(predicted_mask, real_mask) -> float:
+    common_mask = np.bitwise_and(predicted_mask, real_mask)
+    pixels_predicted_mask = cv2.countNonZero(predicted_mask)
+    # pixels_real_mask = cv2.countNonZero(real_mask)
+    pixels_common_mask = cv2.countNonZero(common_mask)
+
+    return pixels_common_mask/(pixels_predicted_mask)
 
 def main():
     mask_1 = cv2.imread(CONFIG_DIR + "22828990_15D.tif")
     mask_2 = cv2.imread(CONFIG_DIR + "22828990_15.tif")
-
-    mask_3 = mask_1 + mask_2
-
-    
-
-
-    vis2 = cv2.cvtColor(mask_3, cv2.COLOR_RGB2GRAY)
 
     photo_1 = cv2.imread(CONFIG_DIR + "22828990_15.tiff")
 
@@ -58,8 +66,8 @@ def main():
     
     # print(mask_size)
 
-    mask_roads = np.zeros(photo_1.shape)
-    mask_buildings = np.zeros(photo_1.shape)
+    mask_roads = np.zeros(photo_1.shape,  np.uint8)
+    mask_buildings = np.zeros(photo_1.shape,  np.uint8)
 
     for c in cnts:
         x,y,w,h = cv2.boundingRect(c)
@@ -67,9 +75,6 @@ def main():
         cv2.fillPoly(mask, [c], [255,255,255])
         mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
         pixels = cv2.countNonZero(mask)
-
-        contour, _ = cv2.findContours(
-            mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         if pixels > 800:
             # Road
@@ -80,29 +85,17 @@ def main():
             cv2.fillPoly(thresholded_photo, [c], [0,255,0])
             cv2.fillPoly(mask_buildings, [c], [255,255,255])
 
-    #print(frame_threshold.shape)
-
-    # mask_buildings = cv2.bitwise_not(mask_buildings)
-
-    # print(mask_buildings.shape)
-    # cv2.imshow("aaaa",mask_1)
-    # cv2.waitKey(0) 
-  
-    # #closing all open windows 
-    # cv2.destroyAllWindows()
-    
-    # Dlaczego nie dziala?
-    print(mask_buildings.shape)
     mask_buildings = cv2.cvtColor(mask_buildings, cv2.COLOR_RGB2GRAY)
-    print(mask_buildings.shape)
-    print(mask_1.shape)
     mask_1 = cv2.cvtColor(mask_1, cv2.COLOR_RGB2GRAY)
-    print(mask_1.shape)
 
-    #(score, diff) = compare_ssim(mask_1, mask_buildings, full=True)
-    # diff = (diff * 255).astype("uint8")
-    #print(f"Building accuracy: {score}")
+    mask_roads = cv2.cvtColor(mask_roads, cv2.COLOR_RGB2GRAY)
+    mask_2 = cv2.cvtColor(mask_2, cv2.COLOR_RGB2GRAY)
 
+    print(f"Precision for buildings: {count_precision(predicted_mask = mask_buildings, real_mask = mask_1)}")
+    print(f"Recall for buildings: {count_recall(predicted_mask = mask_buildings, real_mask = mask_1)}")
+
+    print(f"Precision for roads: {count_precision(predicted_mask = mask_roads, real_mask = mask_2)}")
+    print(f"Recall for roads: {count_recall(predicted_mask = mask_roads, real_mask = mask_2)}")
 
     plt.figure(figsize=(12, 8))
     plt.subplot(121)
