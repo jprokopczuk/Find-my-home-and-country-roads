@@ -28,6 +28,17 @@ def count_recall(predicted_mask, real_mask) -> float:
 
     return pixels_common_mask/(pixels_predicted_mask)
 
+def find_ellipses(thresh): #img is grayscale image of what I want to fit
+        contours,_ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        
+        if len(contours) != 0:
+            for cont in contours:
+                if len(cont) < 5:
+                    break
+                elps = cv2.fitEllipse(cont)
+                return elps  #only returns one ellipse for now
+        return None
+
 def main():
     mask_1 = cv2.imread(CONFIG_DIR + "22828990_15D.tif")
     mask_2 = cv2.imread(CONFIG_DIR + "22828990_15.tif")
@@ -44,12 +55,12 @@ def main():
     frame_threshold = cv2.inRange(frame_HSV, (101, 0, 0), (115, 84, 255))
 
     kernel = np.ones((4,4),np.uint8)
+    kernel2 = np.ones((1,1),np.uint8)
 
     #resized = cv2.resize(diff, dim, interpolation=cv2.INTER_AREA)
 
     frame_threshold = cv2.morphologyEx(frame_threshold, cv2.MORPH_CLOSE, kernel)
-    frame_threshold = cv2.morphologyEx(frame_threshold, cv2.MORPH_OPEN, kernel)
-
+    frame_threshold = cv2.morphologyEx(frame_threshold, cv2.MORPH_OPEN, kernel2)
 
     cnts = cv2.findContours(frame_threshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
@@ -76,14 +87,30 @@ def main():
         mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
         pixels = cv2.countNonZero(mask)
 
-        if pixels > 800:
-            # Road
-            cv2.fillPoly(thresholded_photo, [c], [0,0,255])
-            cv2.fillPoly(mask_roads, [c], [255,255,255])
-        else:
-            # Building
-            cv2.fillPoly(thresholded_photo, [c], [0,255,0])
-            cv2.fillPoly(mask_buildings, [c], [255,255,255])
+        # contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+        elipse = find_ellipses(mask)
+
+        # First filter; objects smaller than 10px aren't analyze
+        if pixels > 10:
+            
+            if elipse[1][0] == 0:
+                # Road
+                cv2.fillPoly(thresholded_photo, [c], [0,0,255])
+                cv2.fillPoly(mask_roads, [c], [255,255,255])
+                continue
+
+            if (elipse[1][1]/elipse[1][0])>2:
+                # Road
+                cv2.fillPoly(thresholded_photo, [c], [0,0,255])
+                cv2.fillPoly(mask_roads, [c], [255,255,255])
+            else:
+                # Building
+                cv2.fillPoly(thresholded_photo, [c], [0,255,0])
+                cv2.fillPoly(mask_buildings, [c], [255,255,255])
 
     mask_buildings = cv2.cvtColor(mask_buildings, cv2.COLOR_RGB2GRAY)
     mask_1 = cv2.cvtColor(mask_1, cv2.COLOR_RGB2GRAY)
