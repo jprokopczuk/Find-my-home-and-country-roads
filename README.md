@@ -2,11 +2,13 @@
 
 ## Setup
 
+Launch program:
+
 ```bash
 python3 main.py
 ```
 
-Install dependencies
+Install dependencies:
 
 ```bash
 pip3 install -r requirements.txt
